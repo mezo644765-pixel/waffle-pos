@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "وافل الجو",
+    "slug": "waffle-pos",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "waffle-pos",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFF8F0"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.waffle.pos"
+    },
+    "android": {
+      "package": "com.waffle.pos",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#FFF8F0"
+      }
+    },
+    "web": {
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
