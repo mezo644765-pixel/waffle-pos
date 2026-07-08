@@ -30,34 +30,17 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      # npm's CLI hits a reproducible "Exit handler never called!" bug on this
+      # runner image partway through installing this dependency tree (npm ci,
+      # npm install, cache-clean, and retries all reproduce it identically).
+      # Yarn does not share this bug, so it's used here for a reliable install.
       - name: Install dependencies
         run: |
           set -e
-          install_and_verify() {
-            rm -rf node_modules
-            npm cache clean --force
-            npm ci --no-audit --no-fund --loglevel=error || true
-            # Check actual package.json + bin presence, not just the directory --
-            # a corrupted/interrupted extraction can leave an empty top-level folder.
-            [ -f "node_modules/expo/package.json" ] && \
-            [ -f "node_modules/.bin/expo" ] && \
-            [ -f "node_modules/react-native/package.json" ]
-          }
-          if install_and_verify; then
-            echo "Dependencies installed and verified on first attempt."
-          else
-            echo "Install incomplete (this runner occasionally leaves node_modules partially populated after npm reports success) - retrying..."
-            for i in 1 2; do
-              if install_and_verify; then
-                echo "Dependencies installed and verified on retry $i."
-                exit 0
-              fi
-              echo "Retry $i failed, waiting before next attempt..."
-              sleep 10
-            done
-            echo "::error::node_modules/expo or node_modules/react-native still missing after retries."
-            exit 1
-          fi
+          yarn install --frozen-lockfile --non-interactive
+          test -f "node_modules/expo/package.json"
+          test -f "node_modules/.bin/expo"
+          test -f "node_modules/react-native/package.json"
 
       # ---- Build ----
       - name: Expo Prebuild (generate Android native project)
