@@ -30,11 +30,29 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Pin npm version (avoids npm 10.9.0/10.9.1 "Exit handler never called" bug)
-        run: npm install -g npm@10.8.2
-
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund --loglevel=error
+        run: |
+          set -e
+          install_and_verify() {
+            rm -rf node_modules
+            npm ci --no-audit --no-fund --loglevel=error || true
+            [ -d "node_modules/expo" ] && [ -d "node_modules/react-native" ]
+          }
+          if install_and_verify; then
+            echo "Dependencies installed and verified on first attempt."
+          else
+            echo "Install incomplete (this runner occasionally leaves node_modules partially populated after npm reports success) - retrying..."
+            for i in 1 2; do
+              if install_and_verify; then
+                echo "Dependencies installed and verified on retry $i."
+                exit 0
+              fi
+              echo "Retry $i failed, waiting before next attempt..."
+              sleep 10
+            done
+            echo "::error::node_modules/expo or node_modules/react-native still missing after retries."
+            exit 1
+          fi
 
       # ---- Build ----
       - name: Expo Prebuild (generate Android native project)
