@@ -35,8 +35,13 @@ jobs:
           set -e
           install_and_verify() {
             rm -rf node_modules
+            npm cache clean --force
             npm ci --no-audit --no-fund --loglevel=error || true
-            [ -d "node_modules/expo" ] && [ -d "node_modules/react-native" ]
+            # Check actual package.json + bin presence, not just the directory --
+            # a corrupted/interrupted extraction can leave an empty top-level folder.
+            [ -f "node_modules/expo/package.json" ] && \
+            [ -f "node_modules/.bin/expo" ] && \
+            [ -f "node_modules/react-native/package.json" ]
           }
           if install_and_verify; then
             echo "Dependencies installed and verified on first attempt."
